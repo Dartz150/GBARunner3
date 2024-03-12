@@ -10,25 +10,26 @@
             .if (\p == 1) && (\w == 0)
                 // lo reg, pre, no writeback
                 add r8, r9, r\rn // add the offset
-                msr cpsr_f, #0 // clear Z flag; will cause Rd to be loaded
+                // we assume here that the Z flag is already cleared
+                // which will cause Rd to be loaded
             .elseif (\p == 1) && (\w == 1)
                 // lo reg, pre, writeback
                 add r8, r\rn, r9 // add the offset
                 mov r9, r\rn // save old value of Rn in case of aliasing
                 mov r\rn, r8 // writeback
-                cmp r10, #(\rn << 12)
+                cmp r10, #(\rn << 2)
             .elseif \p == 0
                 // lo reg, post
                 mov r8, r\rn
                 add r\rn, r\rn, r9 // writeback
                 mov r9, r8 // save old value of Rn in case of aliasing
-                cmp r10, #(\rn << 12)
+                cmp r10, #(\rn << 2)
             .endif
         .elseif \rn < 15
             stmdb r13, {r\rn}^
             nop
             ldr r8, [r13, #-4]
-            cmp r10, #(\rn << 12)
+            cmp r10, #(\rn << 2)
             .if (\p == 1) && (\w == 0)
                 // hi reg, pre, no writeback
                 add r8, r8, r9 // add the offset
@@ -50,12 +51,15 @@
             .endif
         .else
             // rn = pc; writeback is not allowed
-            ldr r8,= memu_inst_addr
-            ldr r8, [r8]
-            msr cpsr_f, #0 // clear Z flag; will cause Rd to be loaded
+            mov r8, #0
+            ldr r8, [r8, #memu_inst_addr]
+            // interlock
             add r8, r8, r9 // add the offset
+            // we assume here that the Z flag is already cleared
+            // which will cause Rd to be loaded
         .endif
-        bx r11
+        ldrb r10, [r11, r8, lsr #24]
+        mov pc, r11, lsr #16
 .endm
 
 .macro memu_armLoadStoreRn_pw rn
@@ -67,6 +71,8 @@
 generate memu_armLoadStoreRn_pw, 16
 
 .section ".dtcm", "aw"
+
+.balign 64
 
 .global memu_armLoadStoreRnTable_00
 memu_armLoadStoreRnTable_00:
