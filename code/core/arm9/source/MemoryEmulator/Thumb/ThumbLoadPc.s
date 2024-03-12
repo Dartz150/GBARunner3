@@ -4,6 +4,7 @@
 #include "AsmMacros.inc"
 #include "ThumbMacros.inc"
 #include "VirtualMachine/VMDtcmDefs.inc"
+#include "SdCache/SdCacheDefs.h"
 
 #ifdef GBAR3_HICODE_CACHE_MAPPING
 
