@@ -6,6 +6,7 @@
 #include "FsIpcCommand.h"
 #include "cp15.h"
 #include "Cpsr.h"
+#include "VirtualMachine/VMNestedIrq.h"
 #include "FsIpc.h"
 
 [[gnu::section(".ewram.bss")]]
@@ -19,10 +20,9 @@ extern "C"
 [[gnu::noinline]]
 u32 fs_waitForCompletion(FsWaitToken* waitToken, bool keepIrqsDisabled)
 {
-    u32 irqs;
+    u32 irqs = arm_disableIrqs();
     while (true)
     {
-        irqs = arm_disableIrqs();
         if (waitToken && waitToken->transactionComplete)
         {
             break;
@@ -39,7 +39,11 @@ u32 fs_waitForCompletion(FsWaitToken* waitToken, bool keepIrqsDisabled)
             sCurrentWaitToken = nullptr;
             break;
         }
-        arm_restoreIrqs(irqs);
+        if (!vm_yieldGbaIrqs())
+        {
+            arm_restoreIrqs(irqs);
+            irqs = arm_disableIrqs();
+        }
     }
     if (!keepIrqsDisabled)
     {
