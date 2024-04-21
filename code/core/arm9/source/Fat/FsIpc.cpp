@@ -39,7 +39,7 @@ u32 fs_waitForCompletion(FsWaitToken* waitToken, bool keepIrqsDisabled)
             sCurrentWaitToken = nullptr;
             break;
         }
-        if (!vm_yieldGbaIrqs())
+        if (!(irqs & 0x80) && !vm_yieldGbaIrqs())
         {
             arm_restoreIrqs(irqs);
             irqs = arm_disableIrqs();
