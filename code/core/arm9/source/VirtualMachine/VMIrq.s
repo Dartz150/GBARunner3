@@ -7,7 +7,7 @@
 
 vm_irq_base:
 
-#define DTCM(x) (vm_irq_base - 0xB8 + (x))
+#define DTCM(x) (vm_irq_base - 0xDC + (x))
 
 /// @brief Main irq handler that handles both emulation irqs and passed
 ///        through irqs to the VM. Should be branched to directly from

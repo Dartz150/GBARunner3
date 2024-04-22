@@ -9,14 +9,22 @@ vm_undefined_base:
 #define DTCM(x) (vm_undefined_base - 0x20 + (x))
 
 arm_func vm_undefined
-    str lr, DTCM(vm_undefinedInstructionAddr)
     mrs r13, spsr
     str r13, DTCM(vm_undefinedSpsr)
+#ifdef GBAR3_HICODE_CACHE_MAPPING
+    cmp lr, #0x08000000
+    bhs hic_undefinedHicodeMiss
+#endif
+
+    str lr, DTCM(vm_undefinedInstructionAddr)
     tst r13, #0x20
     msr cpsr_c, #0xD1 // switch to fiq mode
     ldr r11, DTCM(vm_undefinedInstructionAddr)
     bne vm_undefinedThumb
+
+arm_func vm_undefinedArm
     ldr lr, [r11, #-4] // lr = instruction
+arm_func vm_undefinedArmInstructionInLR
     ldr r12, DTCM(vm_undefinedArmTableAddr)
     and r8, lr, #0x0FF00000
     and r9, lr, #0x810

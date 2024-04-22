@@ -4,10 +4,40 @@
 extern "C" {
 #endif
 
+/// @brief Sets the selected cache index for direct cache access.
+/// @param index The index to select.
+static inline void cache_setIndex(u32 index)
+{
+    asm volatile("mcr p15, 3, %0, c15, c0, 0\n" :: "r"(index));
+}
+
 /// @brief Invalidates the entire instruction cache.
 static inline void ic_invalidateAll()
 {
     asm volatile("mcr p15, 0, %0, c7, c5, 0\n" :: "r"(0));
+}
+
+/// @brief Prefetch an instruction cache line.
+/// @param code A pointer to the code to prefetch.
+static inline void ic_prefetch(const void* code)
+{
+    asm volatile("mcr p15, 0, %0, c7, c13, 1\n" :: "r"(code));
+}
+
+/// @brief Sets the lock settings of the instruction cache.
+/// @param segment The selected cache segment.
+/// @param load Enables load mode when true.
+static inline void ic_setLockdown(u32 segment, bool load)
+{
+    u32 lockConfig = segment | (load ? 0x80000000 : 0);
+    asm volatile("mcr p15, 0, %0, c9, c0, 1\n" :: "r"(lockConfig));
+}
+
+/// @brief Sets the tag of the instruction cache line selected with cache_setIndex.
+/// @param tag The tag value to set.
+static inline void ic_setTag(u32 tag)
+{
+    asm volatile("mcr p15, 3, %0, c15, c1, 0\n" :: "r"(tag));
 }
 
 /// @brief Drains the write buffer.

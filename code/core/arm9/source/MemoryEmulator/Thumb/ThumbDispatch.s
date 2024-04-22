@@ -37,8 +37,6 @@ readInstructionFromCache:
     str lr, DTCM(memu_inst_addr)
     sub r0, lr, #8
     bic r0, r0, #0xFE000000
-    tst r0, #0x800
-    orrne r0, r0, #0x40000000 // set
     mcr p15, 3, r0, c15, c0, 0 // set index
     mrc p15, 3, r0, c15, c3, 0 // read data
     tst lr, #2

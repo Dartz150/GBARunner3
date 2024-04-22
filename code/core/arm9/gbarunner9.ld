@@ -204,29 +204,24 @@ SECTIONS
 		KEEP (vectors.o(.itcm))
 		. = 0x20;
 		KEEP (VMUndefined.o(.itcm))
-		. = 0xB8;
+		. = 0xDC;
 		KEEP (VMIrq.o(.itcm))
 		. = 0x390;
 		KEEP (MemoryLoadRom.o(.itcm))
 		. = 0x400;
 		KEEP (ArmDispatch.o(.itcm))
-		. = 0x450;
+		. = 0x474;
 		KEEP (VMMode.o(.itcm))
-		. = 0x7B4;
+		. = 0x7D8;
 		KEEP (VMSwi.o(.itcm))
 		KEEP (RegDispCnt.o(.itcm))
 		KEEP (Input.o(.itcm))
-		KEEP (IoFallback.o(.itcm))
-		KEEP (PrefetchAbort.o(.itcm))
 		. = 0xC00;
 		KEEP (ThumbDispatch.o(.itcm))
 		KEEP (ThumbLoad.o(.itcm))
 		KEEP (ThumbStore.o(.itcm))
 		KEEP (ThumbLdmStm.o(.itcm))
 		KEEP (ThumbLoadPc.o(.itcm))
-		KEEP (MemCopy.o(.itcm))
-		KEEP (JitThumbEnsureJitted.o(.itcm))
-		KEEP (JitThumbUndefinedBx.o(.itcm))
 		. = 0x2000;
 		KEEP (ThumbGetRnRm.o(.itcm))
 		KEEP (ArmLoadStoreShortRd.o(.itcm))
@@ -273,8 +268,10 @@ SECTIONS
 		__bss_start__ = ABSOLUTE(.);
 		*(.dynbss)
 		*(.gnu.linkonce.b*)
-		*(.bss*)
+		*(EXCLUDE_FILE(HiCodeCacheMapping.o) .bss*)
 		*(COMMON)
+		. = ALIGN(2048);
+		KEEP (HiCodeCacheMapping.o(.bss))
 		. = ALIGN(4);    /* REQUIRED. LD is flaky without it. */
 	} >vrama :NONE
 

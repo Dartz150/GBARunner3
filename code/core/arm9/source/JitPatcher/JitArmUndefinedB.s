@@ -9,6 +9,9 @@ arm_func jit_armUndefinedB
     str lr, [r11, #-4]
     mov r10, #0
     mcr p15, 0, r10, c7, c10, 4
+#ifdef GBAR3_HICODE_CACHE_MAPPING
+    mcr p15, 0, r10, c6, c4, 0 // disable mpu region
+#endif
     mcr p15, 0, r10, c7, c5, 0
     mov r12, lr, lsl #8
     ldr r10, [r10, #vm_undefinedSpsr]

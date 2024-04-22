@@ -213,15 +213,14 @@ SECTIONS
 		KEEP (vectors.o(.itcm))
 		. = 0x20;
 		KEEP (VMUndefined.o(.itcm))
-		. = 0xB8;
+		. = 0xDC;
 		KEEP (VMIrq.o(.itcm))
 		. = 0x400;
 		KEEP (ArmDispatch.o(.itcm))
-		. = 0x450;
+		. = 0x474;
 		KEEP (VMMode.o(.itcm))
-		. = 0x7B4;
+		. = 0x7D8;
 		KEEP (VMSwi.o(.itcm))
-		KEEP (ArmLoadStoreShortRm.o(.itcm))
 		KEEP (IoFallback.o(.itcm))
 		. = 0xC00;
 		KEEP (ThumbDispatch.o(.itcm))
@@ -233,6 +232,7 @@ SECTIONS
 		KEEP (ThumbGetRnRm.o(.itcm))
 		KEEP (ArmLoadStoreShortRd.o(.itcm))
 		KEEP (ArmSwpRd.o(.itcm))
+		KEEP (VMUndefinedMsr.o(.itcm))
 		. = 0x3000;
 		KEEP (ThumbGetRn.o(.itcm))
 		*(.itcm)

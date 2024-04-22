@@ -29,10 +29,18 @@ void SelfModifyingPatches::PatchSelfModifyingWrite(u32 gbaAddress)
     instruction |= (0xE << 28);
 
     auto patchCode = &sPatchCodeBuffer[_patchCodeOffset];
+#ifdef GBAR3_HICODE_CACHE_MAPPING
+    _patchCodeOffset += 4;
+    patchCode[0] = instruction;
+    patchCode[1] = 0xEE060F14; // mcr p15, 0, r0, c6, c4, 0 (disable mpu region)
+    patchCode[2] = 0xEE070F15; // mcr p15, 0, r0, c7, c5, 0
+    patchCode[3] = 0xE1B0F00E; // movs pc, lr
+#else
     _patchCodeOffset += 3;
     patchCode[0] = instruction;
     patchCode[1] = 0xEE070F15; // mcr p15, 0, r0, c7, c5, 0
     patchCode[2] = 0xE1B0F00E; // movs pc, lr
+#endif
 
     u32 patchInstruction = ARM_PATCH_SWI(patch_addSwiPatch(patchCode));
     patchInstruction &= ~(0xF << 28);

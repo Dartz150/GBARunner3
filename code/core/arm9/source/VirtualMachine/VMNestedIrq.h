@@ -1,5 +1,7 @@
 #pragma once
 
+extern u32 vm_nestedIrqLevel;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -44,6 +44,8 @@
 #include "Emulator/BootAnimationSkip.h"
 #include "MemoryEmulator/Arm/ArmDispatchTable.h"
 #include "VirtualMachine/VMUndefinedArmTable.h"
+#include "MemoryEmulator/HiCodeCacheMapping.h"
+#include "VirtualMachine/VMNestedIrq.h"
 
 #define DEFAULT_ROM_FILE_PATH           "/rom.gba"
 #define BIOS_FILE_PATH                  "/_gba/bios.bin"
@@ -394,6 +396,8 @@ static void stopSplashScreenAnimation()
     *(vu32*)0x0100001C = 0xEAFFFFFE; // b .
 }
 
+extern u32 hicodeUndefinedData[];
+
 extern "C" void gbaRunnerMain(int argc, char* argv[])
 {
     heap_init();
@@ -401,6 +405,8 @@ extern "C" void gbaRunnerMain(int argc, char* argv[])
     REG_DISPCNT = 0x10000;
     REG_DISPCNT_SUB = 0x10000;
     GFX_PLTT_BG_SUB[0] = 0;
+
+    vm_nestedIrqLevel = 1; // prevent enabling nested irqs during initialization
 
     sSplashScreen = new SplashScreen();
     sSplashScreen->Initialize();
@@ -490,6 +496,8 @@ extern "C" void gbaRunnerMain(int argc, char* argv[])
     setupWramInstructionCache();
     setupEWramDataCache();
 
+    hic_initialize();
+    vm_nestedIrqLevel = 0;  // restore nested irq level
     rtos_setIrqMask(RTOS_IRQ_VBLANK);
     rtos_ackIrqMask(~0u);
     REG_IME = 1;

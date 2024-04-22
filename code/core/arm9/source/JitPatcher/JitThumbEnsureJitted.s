@@ -37,6 +37,9 @@ arm_func jit_thumbEnsureJitted
     cmp lr, #2
         moveq lr, #0
         mcreq p15, 0, lr, c7, c10, 4
+#ifdef GBAR3_HICODE_CACHE_MAPPING
+        mcreq p15, 0, lr, c6, c4, 0 // disable mpu region
+#endif
         mcreq p15, 0, lr, c7, c5, 0
 
     push {r0-r3}

@@ -7,7 +7,8 @@
 #define IRQ_RETURN_FOR_NESTED_IRQ_ENABLE    0xE2 // always condition for subs pc, r13, #4
 #define IRQ_RETURN_FOR_NESTED_IRQ_DISABLE   0x92 // LS condition for sublss pc, r13, #4
 
-nestedIrqLevel:
+.global vm_nestedIrqLevel
+vm_nestedIrqLevel:
     .word 0
 
 arm_func vm_enableNestedIrqs
@@ -16,10 +17,10 @@ arm_func vm_enableNestedIrqs
     cmp r3, #0x12
         bxeq lr // do not allow nested irqs when in irq mode
 
-    ldr r0, nestedIrqLevel
+    ldr r0, vm_nestedIrqLevel
     cmp r0, #0
     add r0, r0, #1
-    str r0, nestedIrqLevel
+    str r0, vm_nestedIrqLevel
         bxne lr
 
     ldr r0,= vm_irqReturnForNestedIrq
@@ -35,9 +36,9 @@ arm_func vm_disableNestedIrqs
     cmp r3, #0x12
         bxeq lr // do not allow nested irqs when in irq mode
 
-    ldr r0, nestedIrqLevel
+    ldr r0, vm_nestedIrqLevel
     subs r0, r0, #1
-    str r0, nestedIrqLevel
+    str r0, vm_nestedIrqLevel
         bxne lr
 
     orr r2, r2, #0x80
