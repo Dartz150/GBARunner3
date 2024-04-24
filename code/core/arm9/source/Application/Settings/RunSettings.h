@@ -1,6 +1,7 @@
 #pragma once
 #include "common.h"
 #include <memory>
+#include "arm9Clock.h"
 
 class RunSettings
 {
@@ -16,6 +17,9 @@ public:
 
     /// @brief Specifies whether the data cache should be enabled on ewram.
     bool16 enableEWramDataCache = true;
+
+    /// @brief Specifies whether the console clockspeed is forced to 67MHz mode in DSi mode.
+    ScfgArm9Clock forceDSArm9ClockSpeed = ScfgArm9Clock::Twl134MHz;
 
     /// @brief Specifies the rom addresses of instructions that perform a self-modifying write and that should be patched.
     std::unique_ptr<u32[]> selfModifyingPatchAddresses;

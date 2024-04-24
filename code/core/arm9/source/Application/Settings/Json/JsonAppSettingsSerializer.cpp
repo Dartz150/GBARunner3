@@ -25,6 +25,7 @@
 #define KEY_RUN_SETTINGS_ENABLE_EWRAM_DCACHE                "enableEWramDCache"
 #define KEY_RUN_SETTINGS_SELF_MODIFYING_PATCH_ADDRESSES     "selfModifyingPatchAddresses"
 #define KEY_RUN_SETTINGS_SKIP_BIOS_INTRO                    "skipBiosIntro"
+#define KEY_RUN_SETTINGS_ARM9_CLOCK_SPEED                   "forceDSArm9Clock"
 
 #define KEY_GAME_SETTINGS                           "gameSettings"
 #define KEY_GAME_SETTINGS_SAVE_TYPE                 "saveType"
@@ -190,6 +191,16 @@ static bool tryParseSelfModifyingPatchAddresses(const JsonArrayConst& selfModify
     return true;
 }
 
+static bool tryParseArm9ClockSpeed(bool forceDSArm9Clock, ScfgArm9Clock& forceDSArm9ClockSpeed)
+{
+    if (forceDSArm9Clock)
+        forceDSArm9ClockSpeed = ScfgArm9Clock::Nitro67MHz;
+    else
+        forceDSArm9ClockSpeed = ScfgArm9Clock::Twl134MHz;
+
+    return true;
+}
+
 static void readRunSettings(const JsonObjectConst& json, RunSettings& runSettings)
 {
     if (json.isNull())
@@ -200,6 +211,7 @@ static void readRunSettings(const JsonObjectConst& json, RunSettings& runSetting
     readBoolSetting(json[KEY_RUN_SETTINGS_ENABLE_EWRAM_DCACHE], runSettings.enableEWramDataCache);
     tryParseSelfModifyingPatchAddresses(json[KEY_RUN_SETTINGS_SELF_MODIFYING_PATCH_ADDRESSES], runSettings);
     readBoolSetting(json[KEY_RUN_SETTINGS_SKIP_BIOS_INTRO], runSettings.skipBiosIntro);
+    tryParseArm9ClockSpeed(json[KEY_RUN_SETTINGS_ARM9_CLOCK_SPEED], runSettings.forceDSArm9ClockSpeed);
 }
 
 static void readGameSettings(const JsonObjectConst& json, GameSettings& gameSettings)

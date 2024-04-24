@@ -44,6 +44,7 @@
 #include "Emulator/BootAnimationSkip.h"
 #include "MemoryEmulator/Arm/ArmDispatchTable.h"
 #include "VirtualMachine/VMUndefinedArmTable.h"
+#include "arm9Clock.h"
 
 #define DEFAULT_ROM_FILE_PATH           "/rom.gba"
 #define BIOS_FILE_PATH                  "/_gba/bios.bin"
@@ -334,6 +335,12 @@ static void setupEWramDataCache()
     mpu_setRegionDataBufferability(MPU_REGION_GBA_EWRAM, false);
 }
 
+static void setupForceDSArm9Clock()
+{    
+    const auto& runSettings = gAppSettingsService.GetAppSettings().runSettings;
+    scfg_setArm9Clock(runSettings.forceDSArm9ClockSpeed);
+}
+
 static void loadGameSpecificSettings()
 {
     auto path = std::make_unique<char[]>(128);
@@ -489,6 +496,7 @@ extern "C" void gbaRunnerMain(int argc, char* argv[])
     ic_invalidateAll();
     setupWramInstructionCache();
     setupEWramDataCache();
+    setupForceDSArm9Clock();
 
     rtos_setIrqMask(RTOS_IRQ_VBLANK);
     rtos_ackIrqMask(~0u);
