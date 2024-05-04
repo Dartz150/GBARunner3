@@ -21,7 +21,7 @@
 // ARM7 timer clock = controller clock = CPU clock.
 // swiDelay() doesn't seem to be cycle accurate meaning
 // one cycle is 4 (?) CPU cycles.
-#define SLEEP_MS_FUNC(ms)  swiDelay(8378 * (ms))
+#define SLEEP_MS_FUNC(ms) swi_waitByLoop(8378 * (ms))
 
 
 #define MMC_OCR_VOLT_MASK  (MMC_OCR_3_2_3_3V)                        // We support 3.3V only.

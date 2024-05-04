@@ -5,7 +5,6 @@
 
 #include <nds.h>
 
-
 // Possible error codes for most of the functions below.
 enum
 {
@@ -85,8 +84,9 @@ typedef struct
 #define SDMMC_LK_ERASE    (1u<<3) // Force erase a locked (e)MMC/SD card.
 #define SDMMC_LK_COP      (1u<<4) // SD cards only. Card Ownership Protection operation.
 
-
-
+#ifdef __cplusplus
+extern "C"{
+#endif
 /**
  * @brief      Initializes a (e)MMC/SD card device.
  *
@@ -237,3 +237,6 @@ u32 SDMMC_sendCommand(const u8 devNum, MmcCommand *const mmcCmd);
 u32 SDMMC_getLastR1error(const u8 devNum);
 
 // TODO: TRIM/erase support.
+#ifdef __cplusplus
+}
+#endif

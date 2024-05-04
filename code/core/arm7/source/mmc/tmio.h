@@ -5,6 +5,9 @@
 
 #include <assert.h>
 #include <nds.h>
+#include <libtwl/sys/swi.h>
+#include <libtwl/rtos/rtosIrq.h>
+#include <libtwl/rtos/rtosEvent.h>
 
 
 // For simplicity we will name the accessible 2 controllers 1 and 2.
@@ -295,7 +298,10 @@ typedef struct
 } TmioPort;
 
 
-
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 /**
  * @brief      Initializes the tmio driver.
  */
@@ -394,3 +400,7 @@ __attribute__((always_inline)) static inline void TMIO_setBuffer(TmioPort *const
 	port->buf    = buf;
 	port->blocks = blocks;
 }
+
+#ifdef __cplusplus
+}
+#endif

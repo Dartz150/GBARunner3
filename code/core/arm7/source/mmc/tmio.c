@@ -2,7 +2,6 @@
 // Copyright (c) 2023 profi200
 
 #include <stdatomic.h>
-#include <nds.h>
 #include "tmio.h"
 
 
@@ -14,28 +13,29 @@
 // ARM7 timer clock = controller clock = CPU clock.
 // swiDelay() doesn't seem to be cycle accurate meaning
 // one cycle is 4 (?) CPU cycles.
-#define INIT_DELAY_FUNC()  swiDelay(TMIO_CLK2DIV(400000u) * 74 / 4)
+#define INIT_DELAY_FUNC()  swi_waitByLoop(TMIO_CLK2DIV(400000u) * 74 / 4)
 
 
 static u32 g_status[2] = {0};
 
-
+static rtos_event_t sSdEvent;
 
 __attribute__((always_inline)) static inline u8 port2Controller(const u8 portNum)
 {
 	return portNum / 2;
 }
 
-static void tmio1Isr(void) // SD/eMMC.
+static void tmio1Isr(u32 irqMask) // SD/eMMC.
 {
 	Tmio *const regs = getTmioRegs(0);
 	g_status[0] |= regs->sd_status;
 	regs->sd_status = STATUS_CMD_BUSY; // Never acknowledge STATUS_CMD_BUSY.
+	rtos_signalEvent(&sSdEvent);
 
 	// TODO: Some kind of event to notify the main loop for remove/insert.
 }
 
-static void tmio2Isr(void) // WiFi SDIO.
+static void tmio2Isr(u32 irqMask) // WiFi SDIO.
 {
 	Tmio *const regs = getTmioRegs(1);
 	g_status[1] |= regs->sd_status;
@@ -44,11 +44,12 @@ static void tmio2Isr(void) // WiFi SDIO.
 
 void TMIO_init(void)
 {
+	rtos_createEvent(&sSdEvent);
 	// Register ISR and enable IRQs.
-	irqSetAUX(IRQ_SDMMC, tmio1Isr);
-	irqSetAUX(BIT(10), tmio2Isr); // Controller 2.
-	irqEnableAUX(IRQ_SDMMC);
-	irqEnableAUX(BIT(10));        // Controller 2.
+	rtos_setIrq2Func(RTOS_IRQ2_SDMMC, tmio1Isr);
+	rtos_setIrq2Func(RTOS_IRQ2_SDIO, tmio2Isr);
+	rtos_enableIrq2Mask(RTOS_IRQ2_SDMMC);
+	rtos_enableIrq2Mask(RTOS_IRQ2_SDIO);
 
 	// Reset all controllers.
 	for(u32 i = 0; i < 2; i++)
@@ -85,9 +86,10 @@ void TMIO_init(void)
 
 void TMIO_deinit(void)
 {
-	// Unregister ISR and disable IRQs.
-	irqClearAUX(IRQ_SDMMC);
-	irqClearAUX(BIT(10)); // Controller 2.
+	rtos_disableIrq2Mask(RTOS_IRQ2_SDMMC);
+	rtos_setIrq2Func(RTOS_IRQ2_SDMMC, NULL);
+	rtos_disableIrq2Mask(RTOS_IRQ2_SDIO);
+	rtos_setIrq2Func(RTOS_IRQ2_SDIO, NULL);
 
 	// Mask all IRQs.
 	for(u32 i = 0; i < 2; i++)
@@ -196,7 +198,7 @@ static void doCpuTransfer(Tmio *const regs, const u16 cmd, u8 *buf, const u32 *c
 
 				blockCount--;
 			}
-			else swiHalt();
+			else rtos_waitEvent(&sSdEvent, false, true);
 		}
 	}
 	else
@@ -227,7 +229,7 @@ static void doCpuTransfer(Tmio *const regs, const u16 cmd, u8 *buf, const u32 *c
 
 				blockCount--;
 			}
-			else swiHalt();
+			else rtos_waitEvent(&sSdEvent, false, true);
 		}
 	}
 }
@@ -258,7 +260,7 @@ u32 TMIO_sendCommand(TmioPort *const port, const u16 cmd, const u32 arg)
 	// Response end comes immediately after the
 	// command so we need to check before __wfi().
 	// On error response end still fires.
-	while((GET_STATUS(statusPtr) & STATUS_RESP_END) == 0) swiHalt();
+	while((GET_STATUS(statusPtr) & STATUS_RESP_END) == 0) rtos_waitEvent(&sSdEvent, false, true);
 	getResponse(regs, port, cmd);
 
 	if((cmd & CMD_DATA_EN) != 0)
@@ -268,7 +270,7 @@ u32 TMIO_sendCommand(TmioPort *const port, const u16 cmd, const u32 arg)
 
 		// Wait for data end if needed.
 		// On error data end still fires.
-		while((GET_STATUS(statusPtr) & STATUS_DATA_END) == 0) swiHalt();
+		while((GET_STATUS(statusPtr) & STATUS_DATA_END) == 0) rtos_waitEvent(&sSdEvent, false, true);
 	}
 
 	// STATUS_CMD_BUSY is no longer set at this point.
