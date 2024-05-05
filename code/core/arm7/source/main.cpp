@@ -108,6 +108,11 @@ static void initializeArm7()
     sio_setGpioSiIrq(false);
     sio_setGpioMode(RCNT0_L_MODE_GPIO);
 
+    if (isDSiMode())
+    {
+        TMIO_init();
+    }
+    
     initializeIpcServices();
 
     snd_setMasterVolume(127);
@@ -117,7 +122,6 @@ static void initializeArm7()
 
     if (isDSiMode())
     {
-        TMIO_init();
         rtos_setIrq2Func(RTOS_IRQ2_MCU, mcuIrq);
         rtos_enableIrq2Mask(RTOS_IRQ2_MCU);
     }
