@@ -58,6 +58,12 @@ typedef struct
 	u8 _0x10a[2];
 	vu32 sd_fifo32;           // 0x10C Note: This is in the FIFO region on ARM11 (3DS).
 } Tmio;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 static_assert(offsetof(Tmio, sd_fifo32) == 0x10C, "Error: Member sd_fifo32 of Tmio is not at offset 0x10C!");
 
 __attribute__((always_inline)) static inline Tmio* getTmioRegs(const u8 controller)
@@ -70,7 +76,11 @@ __attribute__((always_inline)) static inline vu32* getTmioFifo(Tmio *const regs)
 	return &regs->sd_fifo32;
 }
 
+#ifdef __cplusplus
+}
+#endif
 
+// REG_SD_C
 // REG_SD_CMD
 // Auto response supported commands:
 // CMD0, CMD2, CMD3 (only SD?), CMD7 (only select?), CMD9, CMD10, CMD12, CMD13,
